@@ -1,0 +1,22 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    /* Your existing seamless background */
+    background-image: url('assets/inkbound.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+canvas {
+    display: block; /* Removes the tiny gap at the bottom of inline elements */
+}
