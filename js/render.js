@@ -1,47 +1,52 @@
-import { getState, Mode, getCurrentScene } from "./state.js";
+import { getState, Mode, getCurrentScreen } from "./state.js";
+import { renderElements } from "./ui.js";
 
 // ---------------------------------------------------------
 // Main draw function
 // ---------------------------------------------------------
 function draw(ctx, w, h) {
   const state = getState();
-  const scene = getCurrentScene();
+  const screen = getCurrentScreen();
 
   ctx.clearRect(0, 0, w, h);
 
   // Background always draws first
   drawBackground(ctx, w, h);
 
-  // Start screen
-  if (state.mode === Mode.START) {
-    drawStartScreen(ctx, w, h);
-    return;
-  }
+  if (!screen) return;
 
-  if (state.mode === Mode.MENU) {
-    state.menuButtons = drawMainMenu(ctx, w, h);
-    return;
-  }
+  // Handle different screen types
+  switch (screen.type) {
+    case "splash":
+      state.currentButtons = renderElements(ctx, screen, w, h);
+      break;
 
-  // Dialogue box
-  drawDialogueBox(ctx, w, h);
+    case "ui":
+      state.currentButtons = renderElements(ctx, screen, w, h);
+      break;
 
-  // Dialogue
-  if (state.mode === Mode.DIALOGUE) {
-    drawDialogue(ctx, scene);
-  }
+    case "dialogue":
+      drawDialogueBox(ctx, w, h);
+      drawDialogue(ctx, screen, state.dialogueIndex);
+      state.currentButtons = []; // No buttons in dialogue mode
+      break;
 
-  // Choices
-  if (state.mode === Mode.CHOICES) {
-    state.choiceButtons = drawChoices(ctx, scene.choices);
-    return;
-  }
+    case "choices":
+      drawDialogueBox(ctx, w, h);
+      if (screen.dialogue) {
+        drawDialogue(ctx, screen, state.dialogueIndex);
+      }
+      state.currentButtons = drawChoiceButtons(ctx, screen.elements, w, h);
+      break;
 
-  // Timed choices
-  if (state.mode === Mode.TIMED) {
-    state.choiceButtons = drawChoices(ctx, scene.timedChoices.options);
-    drawTimer(ctx, w, h, state.timeRemaining);
-    return;
+    case "timed":
+      drawDialogueBox(ctx, w, h);
+      if (screen.dialogue) {
+        drawDialogue(ctx, screen, state.dialogueIndex);
+      }
+      state.currentButtons = drawChoiceButtons(ctx, screen.elements, w, h);
+      drawTimer(ctx, w, h, state.timeRemaining);
+      break;
   }
 }
 
@@ -50,93 +55,24 @@ function draw(ctx, w, h) {
 // ---------------------------------------------------------
 function drawBackground(ctx, w, h) {
   const state = getState();
-  const img =
-    state.mode === Mode.START
-      ? state.startBackground
-      : state.sceneBackground || state.startBackground;
+  const img = state.currentBackground;
 
   if (!img || !img.complete) return;
-
-  if (state.cover) updateBodyBackground(scene.cover);
 
   const viewportW = window.innerWidth;
   const viewportH = window.innerHeight;
 
-  // Scale image to cover the entire viewport
   const scale = Math.max(viewportW / img.width, viewportH / img.height);
 
   const scaledW = img.width * scale;
   const scaledH = img.height * scale;
 
-  // Center the scaled image in the viewport
   const offsetX = (viewportW - scaledW) / 2;
   const offsetY = (viewportH - scaledH) / 2;
 
-  // Canvas position on screen
   const rect = ctx.canvas.getBoundingClientRect();
 
-  // Draw the correct slice of the global background
   ctx.drawImage(img, offsetX - rect.left, offsetY - rect.top, scaledW, scaledH);
-}
-
-function updateBodyBackground(src) {
-  document.body.style.backgroundImage = `url('${src}')`;
-  document.body.style.backgroundSize = "cover";
-  document.body.style.backgroundPosition = "center";
-  document.body.style.backgroundAttachment = "fixed";
-}
-
-// ---------------------------------------------------------
-// Start Screen
-// ---------------------------------------------------------
-function drawStartScreen(ctx, w, h) {
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
-
-  ctx.font = "64px serif";
-  ctx.fillText("Inkbound", w / 2, h * 0.35);
-
-  ctx.font = "28px sans-serif";
-  ctx.fillText("Click to Begin", w / 2, h * 0.55);
-}
-
-// ---------------------------------------------------------
-// Main Menu
-// ---------------------------------------------------------
-function drawMainMenu(ctx, w, h) {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-  ctx.fillRect(0, 0, w, h);
-
-  ctx.fillStyle = "#fff";
-  ctx.font = "36px serif";
-  ctx.textAlign = "center";
-
-  const options = ["Start", "Load", "Settings", "Exit"];
-  const buttons = [];
-
-  for (let i = 0; i < options.length; i++) {
-    const text = options[i];
-    const x = w / 2;
-    const y = h * 0.3 + i * 60;
-
-    ctx.fillText(text, x, y);
-
-    // Compute bounding box for hit detection
-    const metrics = ctx.measureText(text);
-    const width = metrics.width;
-    const height = 36; // approximate text height
-
-    buttons.push({
-      text,
-      action: text.toLowerCase(),
-      x: x - width / 2,
-      y: y - height,
-      w: width,
-      h: height * 1.4,
-    });
-  }
-
-  return buttons;
 }
 
 // ---------------------------------------------------------
@@ -150,10 +86,10 @@ function drawDialogueBox(ctx, w, h) {
 // ---------------------------------------------------------
 // Dialogue Text
 // ---------------------------------------------------------
-function drawDialogue(ctx, scene) {
-  const state = getState();
-  const line = scene.dialogue[state.dialogueIndex];
-  if (!line) return;
+function drawDialogue(ctx, screen, index) {
+  if (!screen.dialogue || !screen.dialogue[index]) return;
+
+  const line = screen.dialogue[index];
 
   ctx.fillStyle = "#fff";
   ctx.font = "20px sans-serif";
@@ -164,33 +100,47 @@ function drawDialogue(ctx, scene) {
 }
 
 // ---------------------------------------------------------
-// Choices
+// Choice Buttons (from elements array)
 // ---------------------------------------------------------
-function drawChoices(ctx, choices) {
-  ctx.fillStyle = "#fff";
-  ctx.font = "20px sans-serif";
-  ctx.textAlign = "left";
-
+function drawChoiceButtons(ctx, elements, w, h) {
   const buttons = [];
 
-  for (let i = 0; i < choices.length; i++) {
-    const text = `${i + 1}. ${choices[i].text}`;
-    const x = 40;
-    const y = ctx.canvas.height - 150 + i * 32;
+  if (!elements) return buttons;
 
-    ctx.fillText(text, x, y);
+  for (let i = 0; i < elements.length; i++) {
+    const element = elements[i];
+    if (element.type !== "button") continue;
 
-    // Measure text for hitbox
-    const metrics = ctx.measureText(text);
-    const width = metrics.width;
-    const height = 24; // approximate text height
+    const x = element.x * w;
+    const y = element.y * h;
+    const btnWidth = element.width ? element.width * w : w * 0.8;
+    const btnHeight = element.height ? element.height * h : 50;
+
+    // Draw button background
+    ctx.fillStyle = element.background || "rgba(255, 255, 255, 0.1)";
+    ctx.fillRect(x, y, btnWidth, btnHeight);
+
+    // Draw button border
+    if (element.border) {
+      ctx.strokeStyle = element.borderColor || "#fff";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, btnWidth, btnHeight);
+    }
+
+    // Draw button text
+    ctx.fillStyle = element.color || "#fff";
+    ctx.font = element.font || "20px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(element.text, x + 20, y + btnHeight / 2);
 
     buttons.push({
+      action: element.action,
       index: i,
       x,
-      y: y - height,
-      w: width,
-      h: height * 1.4,
+      y,
+      w: btnWidth,
+      h: btnHeight,
     });
   }
 
@@ -198,7 +148,7 @@ function drawChoices(ctx, choices) {
 }
 
 // ---------------------------------------------------------
-// Timer (for timed choices)
+// Timer
 // ---------------------------------------------------------
 function drawTimer(ctx, w, h, timeRemaining) {
   ctx.fillStyle = "red";

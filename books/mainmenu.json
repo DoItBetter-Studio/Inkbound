@@ -1,0 +1,74 @@
+{
+  "start": "library",
+  "screens": {
+    "library": {
+      "type": "ui",
+      "background": "assets/inkbound.png",
+      "elements": [
+        {
+          "type": "button",
+          "text": "Royal Hearts",
+          "font": "36px serif",
+          "color": "#fff",
+          "x": "center",
+          "y": 0.3,
+          "width": 0.4,
+          "height": 0.08,
+          "align": "center",
+          "border": true,
+          "action": {
+            "type": "loadBook",
+            "path": "books/book1.json"
+          }
+        },
+        {
+          "type": "button",
+          "text": "Settings",
+          "font": "36px serif",
+          "color": "#fff",
+          "x": "center",
+          "y": 0.42,
+          "width": 0.4,
+          "height": 0.08,
+          "align": "center",
+          "border": true,
+          "action": {
+            "type": "navigate",
+            "screen": "settings"
+          }
+        }
+      ]
+    },
+    "settings": {
+      "type": "ui",
+      "background": "assets/inkbound.png",
+      "elements": [
+        {
+          "type": "label",
+          "text": "Settings",
+          "font": "48px serif",
+          "color": "white",
+          "x": "center",
+          "y": 0.2,
+          "align": "center"
+        },
+        {
+          "type": "button",
+          "text": "Back",
+          "font": "28px sans-serif",
+          "color": "#fff",
+          "x": "center",
+          "y": 0.7,
+          "width": 0.3,
+          "height": 0.08,
+          "align": "center",
+          "border": true,
+          "action": {
+            "type": "navigate",
+            "screen": "library"
+          }
+        }
+      ]
+    }
+  }
+}

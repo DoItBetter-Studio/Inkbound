@@ -1,13 +1,11 @@
 import {
   getState,
   Mode,
-  setMode,
-  setStartBackground,
-  setSceneBackground,
   setBook,
+  getCurrentScreen,
 } from "./js/state.js";
 
-import { advance, choose, chooseTimed } from "./js/engine.js";
+import { advance, handleAction } from "./js/engine.js";
 import { draw } from "./js/render.js";
 
 // ---------------------------------------------------------
@@ -39,40 +37,12 @@ function resizeCanvas() {
 // Listen to breakpoint changes directly
 mobileQuery.addEventListener("change", resizeCanvas);
 window.addEventListener("resize", resizeCanvas);
+window.addEventListener("load", () => {
+  setTimeout(resizeCanvas, 50);
+});
 
 // ---------------------------------------------------------
-// Background Loader
-// ---------------------------------------------------------
-function loadBackground(src, callback) {
-  const img = new Image();
-  img.src = src;
-  img.onload = () => callback(img);
-}
-
-// Load start screen background
-loadBackground("assets/inkbound.png", setStartBackground);
-
-// ---------------------------------------------------------
-// Scene Background Loader
-// ---------------------------------------------------------
-function loadSceneBackgroundIfNeeded() {
-  const state = getState();
-  const scene = state.book?.story[state.sceneId];
-
-  if (!scene || !scene.background) {
-    setSceneBackground(null);
-    return;
-  }
-
-  loadBackground(scene.background, (img) => {
-    setSceneBackground(img);
-  });
-}
-
-window.onSceneChanged = loadSceneBackgroundIfNeeded;
-
-// ---------------------------------------------------------
-// Menu Button Layout (temporary static version)
+// Click Position Helper
 // ---------------------------------------------------------
 function getCanvasClickPosition(event) {
   const rect = canvas.getBoundingClientRect();
@@ -82,119 +52,58 @@ function getCanvasClickPosition(event) {
   };
 }
 
+// ---------------------------------------------------------
+// Hit Test Helper
+// ---------------------------------------------------------
 function hitTestButton(x, y, btn) {
   return x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h;
-}
-
-function handleMenuAction(action) {
-  switch (action) {
-    case "start":
-      setMode(Mode.DIALOGUE);
-      break;
-
-    case "load":
-      console.log("Load not implemented yet");
-      break;
-
-    case "settings":
-      console.log("Settings not implemented yet");
-      break;
-
-    case "exit":
-      console.log("Exit not implemented yet");
-      break;
-  }
 }
 
 // ---------------------------------------------------------
 // Input Handling
 // ---------------------------------------------------------
-canvas.addEventListener("click", (event) => {
+canvas.addEventListener("click", async (event) => {
   const state = getState();
+  const screen = getCurrentScreen();
   const { x, y } = getCanvasClickPosition(event);
 
-  // START SCREEN → MAIN MENU
-  if (state.mode === Mode.START) {
-    setMode(Mode.MENU);
-    return;
-  }
+  if (!screen) return;
 
-  // MAIN MENU BUTTONS
-  if (state.mode === Mode.MENU) {
-    const { x, y } = getCanvasClickPosition(event);
-
-    for (const btn of state.menuButtons || []) {
+  // Check if any buttons were clicked
+  if (state.currentButtons && state.currentButtons.length > 0) {
+    for (const btn of state.currentButtons) {
       if (hitTestButton(x, y, btn)) {
-        handleMenuAction(btn.action);
+        if (btn.action) {
+          await handleAction(btn.action);
+        }
         return;
       }
     }
-
-    return;
   }
 
-  // CHOICE MODE
-  if (state.mode === Mode.CHOICES) {
-    const { x, y } = getCanvasClickPosition(event);
-
-    for (const btn of state.choiceButtons || []) {
-      if (hitTestButton(x, y, btn)) {
-        choose(btn.index);
-        return;
-      }
-    }
-    return;
+  // If no button clicked, advance (for splash/dialogue screens)
+  if (screen.type === "splash" || screen.type === "dialogue") {
+    advance();
   }
-
-  // TIMED CHOICE MODE
-  if (state.mode === Mode.TIMED) {
-    const { x, y } = getCanvasClickPosition(event);
-
-    for (const btn of state.choiceButtons || []) {
-      if (hitTestButton(x, y, btn)) {
-        chooseTimed(btn.index);
-        return;
-      }
-    }
-    return;
-  }
-
-  // DIALOGUE MODE
-  advance();
 });
 
 // ---------------------------------------------------------
-// Story Setup
+// Book Loader
 // ---------------------------------------------------------
-const testBook = {
-  cover: "",
-  start: "intro",
-  story: {
-    intro: {
-      background: "assets/forest.png",
-      dialogue: [
-        { speaker: "Narrator", text: "Welcome to your visual novel." },
-        { speaker: "Narrator", text: "Click to continue." },
-      ],
-      next: "choice_scene",
-    },
-    choice_scene: {
-      background: "assets/cave.png",
-      dialogue: [{ speaker: "Narrator", text: "Make a choice." }],
-      choices: [
-        { text: "Option A", next: "end" },
-        { text: "Option B", next: "end" },
-      ],
-    },
-    end: {
-      background: "assets/ending.png",
-      dialogue: [{ speaker: "Narrator", text: "The End." }],
-    },
-  },
-};
+async function loadBook(path) {
+  try {
+    const response = await fetch(path);
+    const bookData = await response.json();
+    setBook(bookData);
+  } catch (error) {
+    console.error("Failed to load book:", error);
+  }
+}
 
-setBook(testBook);
-loadSceneBackgroundIfNeeded();
+// ---------------------------------------------------------
+// Initialize - Load start screen
+// ---------------------------------------------------------
+loadBook("books/startmenu.json");
 
 // ---------------------------------------------------------
 // Main Loop

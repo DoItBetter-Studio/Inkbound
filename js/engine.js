@@ -1,112 +1,87 @@
 import {
   getState,
-  Mode,
-  setMode,
-  setScene,
+  setScreen,
+  setModeFromScreen,
   nextDialogue,
-  getCurrentScene,
-  clearTimer,
-  setTimer,
+  getCurrentScreen,
+  setBook,
 } from "./state.js";
 
 // ---------------------------------------------------------
-// Advance the story based on current mode
+// Navigate to next screen
 // ---------------------------------------------------------
-function advance() {
-  const state = getState();
-  const scene = getCurrentScene();
-  if (!scene) return;
+function navigate(screenId) {
+  setScreen(screenId);
+  setModeFromScreen();
+}
 
-  // START → DIALOGUE
-  if (state.mode === Mode.START) {
-    setMode(Mode.DIALOGUE);
+// ---------------------------------------------------------
+// Handle button/screen actions
+// ---------------------------------------------------------
+async function handleAction(action) {
+  if (!action) return;
+
+  switch (action.type) {
+    case "navigate":
+      navigate(action.screen);
+      break;
+
+    case "loadBook":
+      const response = await fetch(action.path);
+      const bookData = await response.json();
+      setBook(bookData);
+      setModeFromScreen();
+      break;
+
+    case "advance":
+      advance();
+      break;
+  }
+}
+
+// ---------------------------------------------------------
+// Advance dialogue/story
+// ---------------------------------------------------------
+async function advance() {
+  const state = getState();
+  const screen = getCurrentScreen();
+  if (!screen) return;
+
+  // SPLASH/UI with action → execute action
+  if ((screen.type === "splash" || screen.type === "ui") && screen.action) {
+    await handleAction(screen.action);
+    return;
+  }
+
+  // SPLASH/UI with next → navigate
+  if ((screen.type === "splash" || screen.type === "ui") && screen.next) {
+    navigate(screen.next);
     return;
   }
 
   // DIALOGUE MODE
-  if (state.mode === Mode.DIALOGUE) {
-    const atEnd = state.dialogueIndex >= scene.dialogue.length - 1;
+  if (screen.type === "dialogue") {
+    const atEnd = state.dialogueIndex >= screen.dialogue.length - 1;
 
     if (!atEnd) {
       nextDialogue();
       return;
     }
 
-    // Dialogue finished → choices?
-    if (scene.choices) {
-      setMode(Mode.CHOICES);
+    // Dialogue finished → check for action or next
+    if (screen.action) {
+      await handleAction(screen.action);
       return;
     }
 
-    // Timed choices?
-    if (scene.timedChoices) {
-      startTimedChoices(scene);
+    if (screen.next) {
+      navigate(screen.next);
       return;
     }
-
-    // Next scene?
-    if (scene.next) {
-      setScene(scene.next);
-      if (window.onSceneChanged) window.onSceneChanged();
-      setMode(Mode.DIALOGUE);
-      return;
-    }
-
-    return;
   }
 
-  // CHOICE MODE — handled externally
-  if (state.mode === Mode.CHOICES) return;
-
-  // TIMED MODE — handled externally
-  if (state.mode === Mode.TIMED) return;
+  // CHOICES/TIMED handled by button clicks only
 }
 
 // ---------------------------------------------------------
-// Handle a choice selection
-// ---------------------------------------------------------
-function choose(index) {
-  const scene = getCurrentScene();
-  if (!scene || !scene.choices) return;
-
-  const choice = scene.choices[index];
-  if (!choice) return;
-
-  setScene(choice.next);
-  if (window.onSceneChanged) window.onSceneChanged();
-  setMode(Mode.DIALOGUE);
-}
-
-// ---------------------------------------------------------
-// Timed Choices
-// ---------------------------------------------------------
-function startTimedChoices(scene) {
-  setMode(Mode.TIMED);
-
-  const data = scene.timedChoices;
-  const duration = data.time || 5;
-
-  clearTimer();
-
-  setTimer(duration, null, () => {
-    const fallback = data.defaultIndex || 0;
-    chooseTimed(fallback);
-  });
-}
-
-function chooseTimed(index) {
-  clearTimer();
-
-  const scene = getCurrentScene();
-  if (!scene || !scene.timedChoices) return;
-
-  const choice = scene.timedChoices.options[index];
-  if (!choice) return;
-
-  setScene(choice.next);
-  if (window.onSceneChanged) window.onSceneChanged();
-  setMode(Mode.DIALOGUE);
-}
-
-// ---------------------------------------------------------
-export { advance, choose, chooseTimed };
+export { advance, handleAction };

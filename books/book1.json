@@ -1,0 +1,64 @@
+{
+  "start": "intro",
+  "screens": {
+    "intro": {
+      "type": "dialogue",
+      "background": "assets/forest.png",
+      "dialogue": [
+        { "speaker": "Narrator", "text": "Welcome to Royal Hearts." },
+        { "speaker": "Narrator", "text": "Your adventure begins..." }
+      ],
+      "next": "choice_scene"
+    },
+    "choice_scene": {
+      "type": "choices",
+      "background": "assets/cave.png",
+      "dialogue": [
+        { "speaker": "Narrator", "text": "You come to a fork in the road." }
+      ],
+      "elements": [
+        {
+          "type": "button",
+          "text": "Take the left path",
+          "font": "20px sans-serif",
+          "color": "#fff",
+          "x": 0.1,
+          "y": 0.75,
+          "width": 0.8,
+          "height": 0.08,
+          "border": true,
+          "action": {
+            "type": "navigate",
+            "screen": "end"
+          }
+        },
+        {
+          "type": "button",
+          "text": "Take the right path",
+          "font": "20px sans-serif",
+          "color": "#fff",
+          "x": 0.1,
+          "y": 0.85,
+          "width": 0.8,
+          "height": 0.08,
+          "border": true,
+          "action": {
+            "type": "navigate",
+            "screen": "end"
+          }
+        }
+      ]
+    },
+    "end": {
+      "type": "dialogue",
+      "background": "assets/ending.png",
+      "dialogue": [
+        { "speaker": "Narrator", "text": "The End." }
+      ],
+      "action": {
+        "type": "loadBook",
+        "path": "books/mainmenu.json"
+      }
+    }
+  }
+}

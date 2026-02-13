@@ -1,0 +1,31 @@
+{
+  "start": "splash",
+  "screens": {
+    "splash": {
+      "type": "splash",
+      "background": "assets/inkbound.png",
+      "elements": [
+        {
+          "type": "label",
+          "text": "Inkbound",
+          "font": "64px serif",
+          "color": "white",
+          "x": "center",
+          "y": 0.35
+        },
+        {
+          "type": "label",
+          "text": "Click to Begin",
+          "font": "28px sans-serif",
+          "color": "white",
+          "x": "center",
+          "y": 0.55
+        }
+      ],
+      "action": {
+        "type": "loadBook",
+        "path": "books/mainmenu.json"
+      }
+    }
+  }
+}

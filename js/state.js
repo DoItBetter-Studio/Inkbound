@@ -2,27 +2,29 @@
 // Modes
 // -------------------------------------------------------
 const Mode = {
-  START: "start",
-  MENU: "menu",
+  SPLASH: "splash",
+  UI: "ui",
   DIALOGUE: "dialogue",
-  CHOICES: "choices",
-  TIMED: "timed",
+  CHOICE: "choice",
+  TIMED_CHOICE: "timed_choice",
 };
 
 // -------------------------------------------------------
 // Global State Object
 // -------------------------------------------------------
 const state = {
-  mode: Mode.START,
+  mode: Mode.SPLASH,
 
-  // Story Structure
+  // Book/Screen Structure
   book: null,
-  sceneId: null,
+  screenId: null,
   dialogueIndex: 0,
 
+  // UI elements (buttons, etc.)
+  currentButtons: [],
+
   // Backgrounds / assets
-  startBackground: null,
-  sceneBackground: null,
+  currentBackground: null,
 
   // Timed choice state
   timeRemaining: 0,
@@ -37,44 +39,88 @@ function getState() {
 }
 
 // -------------------------------------------------------
-// Book / Scene Management
+// Book / Screen Management
 // -------------------------------------------------------
 function setBook(book) {
   state.book = book;
-  state.sceneId = book.start;
+  state.screenId = book.start;
   state.dialogueIndex = 0;
+  loadScreenBackground();
 }
 
-function setScene(id) {
-  state.sceneId = id;
+function setScreen(id) {
+  state.screenId = id;
   state.dialogueIndex = 0;
+  loadScreenBackground();
 }
 
 function nextDialogue() {
   state.dialogueIndex++;
 }
 
-function getCurrentScene() {
+function getCurrentScreen() {
   if (!state.book) return null;
-  return state.book.story[state.sceneId];
+  return state.book.screens[state.screenId];
 }
 
 // -------------------------------------------------------
-// Mode Management
+// Mode Management (auto-set based on screen type)
 // -------------------------------------------------------
-function setMode(mode) {
-  state.mode = mode;
+function setModeFromScreen() {
+  const screen = getCurrentScreen();
+  if (!screen) return;
+
+  switch (screen.type) {
+    case "splash":
+      state.mode = Mode.SPLASH;
+      break;
+    case "ui":
+      state.mode = Mode.UI;
+      break;
+    case "dialogue":
+      state.mode = Mode.DIALOGUE;
+      break;
+    case "choices":
+      state.mode = Mode.CHOICE;
+      break;
+    case "timed":
+      state.mode = Mode.TIMED_CHOICE;
+      break;
+  }
 }
 
 // -------------------------------------------------------
 // Backgrounds
 // -------------------------------------------------------
-function setStartBackground(img) {
-  state.startBackground = img;
+function loadScreenBackground() {
+  const screen = getCurrentScreen();
+  if (!screen) {
+    state.currentBackground = null;
+    return;
+  }
+
+  const src = screen.cover || screen.background;
+  if (!src) {
+    state.currentBackground = null;
+    return;
+  }
+
+  const img = new Image();
+  img.src = src;
+  img.onload = () => {
+    state.currentBackground = img;
+
+    if (screen.cover) {
+      document.body.style.backgroundImage = `url('${src}')`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundAttachment = "fixed";
+    }
+  };
 }
 
-function setSceneBackground(img) {
-  state.sceneBackground = img;
+function setBackground(img) {
+  state.currentBackground = img;
 }
 
 // -------------------------------------------------------
@@ -110,13 +156,12 @@ function clearTimer() {
 export {
   Mode,
   getState,
-  setMode,
   setBook,
-  setScene,
+  setScreen,
+  setModeFromScreen,
   nextDialogue,
-  getCurrentScene,
-  setStartBackground,
-  setSceneBackground,
+  getCurrentScreen,
+  setBackground,
   setTimer,
   clearTimer,
 };
