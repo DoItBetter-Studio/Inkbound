@@ -2,8 +2,8 @@
   "start": "splash",
   "screens": {
     "splash": {
+      "cover": "assets/inkbound.png",
       "type": "splash",
-      "background": "assets/inkbound.png",
       "elements": [
         {
           "type": "label",

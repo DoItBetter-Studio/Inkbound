@@ -1,47 +1,322 @@
 {
-  "start": "library",
+  "start": "home",
   "screens": {
-    "library": {
+    "home": {
       "type": "ui",
       "background": "assets/inkbound.png",
+      "navbar": {
+        "position": "bottom",
+        "height": 0.1,
+        "background": "rgba(0,0,0,0.8)",
+        "items": [
+          {
+            "icon": "🏠",
+            "text": "Home",
+            "action": { "type": "navigate", "screen": "home" },
+            "active": true
+          },
+          {
+            "icon": "📚",
+            "text": "Library",
+            "action": { "type": "navigate", "screen": "library" }
+          },
+          {
+            "icon": "👤",
+            "text": "Profile",
+            "action": { "type": "navigate", "screen": "profile" }
+          },
+          {
+            "icon": "⚙️",
+            "text": "Settings",
+            "action": { "type": "navigate", "screen": "settings" }
+          }
+        ]
+      },
       "elements": [
         {
-          "type": "button",
-          "text": "Royal Hearts",
-          "font": "36px serif",
-          "color": "#fff",
-          "x": "center",
-          "y": 0.3,
-          "width": 0.4,
-          "height": 0.08,
-          "align": "center",
-          "border": true,
-          "action": {
-            "type": "loadBook",
-            "path": "books/book1.json"
-          }
+          "type": "label",
+          "text": "Inkbound",
+          "font": "48px serif",
+          "color": "white",
+          "x": 0.05,
+          "y": 0.08,
+          "align": "left"
+        },
+        {
+          "type": "label",
+          "text": "Continue Reading",
+          "font": "28px sans-serif",
+          "color": "white",
+          "x": 0.05,
+          "y": 0.16,
+          "align": "left"
         },
         {
           "type": "button",
-          "text": "Settings",
-          "font": "36px serif",
+          "backgroundImage": "assets/placeholder.png",
+          "overlay": "rgba(0,0,0,0.3)",
+          "font": "24px sans-serif",
           "color": "#fff",
-          "x": "center",
-          "y": 0.42,
-          "width": 0.4,
-          "height": 0.08,
-          "align": "center",
+          "x": 0.05,
+          "y": 0.25,
+          "width": 0.1,
+          "height": 0.15,
           "border": true,
-          "action": {
-            "type": "navigate",
-            "screen": "settings"
-          }
+          "borderColor": "rgba(255,255,255,0.5)",
+          "action": { "type": "loadBook", "path": "books/book1.json" }
+        },
+        {
+          "type": "label",
+          "text": "Royal Hearts - Chapter 3",
+          "font": "20px sans-serif",
+          "color": "white",
+          "x": 0.05,
+          "y": 0.35,
+          "align": "left"
+        },
+        {
+          "type": "label",
+          "text": "Browse All Stories",
+          "font": "28px sans-serif",
+          "color": "white",
+          "x": 0.05,
+          "y": 0.41,
+          "align": "left"
+        },
+        {
+          "type": "scroll",
+          "x": 0.05,
+          "y": 0.45,
+          "width": 0.9,
+          "height": 0.43,
+          "layout": {
+            "columns": 3,
+            "rowHeight": 0.28,
+            "gap": 0.03
+          },
+          "items": [
+            {
+              "title": "Royal Hearts",
+              "cover": "assets/placeholder.png",
+              "action": { "type": "loadBook", "path": "books/book1.json" }
+            },
+            {
+              "title": "Coming Soon",
+              "cover": "assets/placeholder.png"
+            },
+            {
+              "title": "Coming Soon",
+              "cover": "assets/placeholder.png"
+            },
+            {
+              "title": "Coming Soon",
+              "cover": "assets/placeholder.png"
+            }
+          ]
         }
       ]
     },
+
+    "library": {
+      "type": "ui",
+      "background": "assets/inkbound.png",
+      "navbar": {
+        "position": "bottom",
+        "height": 0.1,
+        "background": "rgba(0,0,0,0.8)",
+        "items": [
+          {
+            "icon": "🏠",
+            "text": "Home",
+            "action": { "type": "navigate", "screen": "home" }
+          },
+          {
+            "icon": "📚",
+            "text": "Library",
+            "action": { "type": "navigate", "screen": "library" },
+            "active": true
+          },
+          {
+            "icon": "👤",
+            "text": "Profile",
+            "action": { "type": "navigate", "screen": "profile" }
+          },
+          {
+            "icon": "⚙️",
+            "text": "Settings",
+            "action": { "type": "navigate", "screen": "settings" }
+          }
+        ]
+      },
+      "elements": [
+        {
+          "type": "label",
+          "text": "Library",
+          "font": "48px serif",
+          "color": "white",
+          "x": "center",
+          "y": 0.08,
+          "align": "center"
+        },
+        {
+          "type": "button",
+          "text": "All",
+          "font": "18px sans-serif",
+          "color": "#fff",
+          "x": 0.1,
+          "y": 0.16,
+          "width": 0.15,
+          "height": 0.05,
+          "align": "center",
+          "background": "rgba(100,100,255,0.3)",
+          "action": { "type": "navigate", "screen": "library" }
+        },
+        {
+          "type": "button",
+          "text": "Romance",
+          "font": "18px sans-serif",
+          "color": "#fff",
+          "x": 0.27,
+          "y": 0.16,
+          "width": 0.15,
+          "height": 0.05,
+          "align": "center",
+          "action": { "type": "navigate", "screen": "library_romance" }
+        },
+        {
+          "type": "button",
+          "text": "Mystery",
+          "font": "18px sans-serif",
+          "color": "#fff",
+          "x": 0.44,
+          "y": 0.16,
+          "width": 0.15,
+          "height": 0.05,
+          "align": "center",
+          "action": { "type": "navigate", "screen": "library_mystery" }
+        },
+        {
+          "type": "button",
+          "text": "Fantasy",
+          "font": "18px sans-serif",
+          "color": "#fff",
+          "x": 0.61,
+          "y": 0.16,
+          "width": 0.15,
+          "height": 0.05,
+          "align": "center",
+          "action": { "type": "navigate", "screen": "library_fantasy" }
+        },
+        {
+          "type": "scroll",
+          "x": 0.05,
+          "y": 0.24,
+          "width": 0.9,
+          "height": 0.64,
+          "layout": {
+            "columns": 3,
+            "rowHeight": 0.28,
+            "gap": 0.03
+          },
+          "items": [
+            {
+              "title": "Royal Hearts",
+              "cover": "assets/placeholder.png",
+              "action": { "type": "loadBook", "path": "books/book1.json" }
+            },
+            {
+              "title": "Coming Soon",
+              "cover": "assets/placeholder.png"
+            }
+          ]
+        }
+      ]
+    },
+
+    "profile": {
+      "type": "ui",
+      "background": "assets/inkbound.png",
+      "navbar": {
+        "position": "bottom",
+        "height": 0.1,
+        "background": "rgba(0,0,0,0.8)",
+        "items": [
+          {
+            "icon": "🏠",
+            "text": "Home",
+            "action": { "type": "navigate", "screen": "home" }
+          },
+          {
+            "icon": "📚",
+            "text": "Library",
+            "action": { "type": "navigate", "screen": "library" }
+          },
+          {
+            "icon": "👤",
+            "text": "Profile",
+            "action": { "type": "navigate", "screen": "profile" },
+            "active": true
+          },
+          {
+            "icon": "⚙️",
+            "text": "Settings",
+            "action": { "type": "navigate", "screen": "settings" }
+          }
+        ]
+      },
+      "elements": [
+        {
+          "type": "label",
+          "text": "Profile",
+          "font": "48px serif",
+          "color": "white",
+          "x": "center",
+          "y": 0.1,
+          "align": "center"
+        },
+        {
+          "type": "label",
+          "text": "Coming soon...",
+          "font": "24px sans-serif",
+          "color": "white",
+          "x": "center",
+          "y": 0.5,
+          "align": "center"
+        }
+      ]
+    },
+
     "settings": {
       "type": "ui",
       "background": "assets/inkbound.png",
+      "navbar": {
+        "position": "bottom",
+        "height": 0.1,
+        "background": "rgba(0,0,0,0.8)",
+        "items": [
+          {
+            "icon": "🏠",
+            "text": "Home",
+            "action": { "type": "navigate", "screen": "home" }
+          },
+          {
+            "icon": "📚",
+            "text": "Library",
+            "action": { "type": "navigate", "screen": "library" }
+          },
+          {
+            "icon": "👤",
+            "text": "Profile",
+            "action": { "type": "navigate", "screen": "profile" }
+          },
+          {
+            "icon": "⚙️",
+            "text": "Settings",
+            "action": { "type": "navigate", "screen": "settings" },
+            "active": true
+          }
+        ]
+      },
       "elements": [
         {
           "type": "label",
@@ -49,24 +324,17 @@
           "font": "48px serif",
           "color": "white",
           "x": "center",
-          "y": 0.2,
+          "y": 0.1,
           "align": "center"
         },
         {
-          "type": "button",
-          "text": "Back",
-          "font": "28px sans-serif",
-          "color": "#fff",
+          "type": "label",
+          "text": "Coming soon...",
+          "font": "24px sans-serif",
+          "color": "white",
           "x": "center",
-          "y": 0.7,
-          "width": 0.3,
-          "height": 0.08,
-          "align": "center",
-          "border": true,
-          "action": {
-            "type": "navigate",
-            "screen": "library"
-          }
+          "y": 0.5,
+          "align": "center"
         }
       ]
     }

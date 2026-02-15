@@ -1,9 +1,4 @@
-import {
-  getState,
-  Mode,
-  setBook,
-  getCurrentScreen,
-} from "./js/state.js";
+import { getState, Mode, setBook, getCurrentScreen } from "./js/state.js";
 
 import { advance, handleAction } from "./js/engine.js";
 import { draw } from "./js/render.js";
@@ -85,6 +80,13 @@ canvas.addEventListener("click", async (event) => {
   if (screen.type === "splash" || screen.type === "dialogue") {
     advance();
   }
+});
+
+canvas.addEventListener("wheel", (event) => {
+  const state = getState();
+  state.scrollOffset += event.deltaY * 0.002;
+
+  if (state.scrollOffset < 0) state.scrollOffset = 0;
 });
 
 // ---------------------------------------------------------

@@ -5,8 +5,8 @@ const Mode = {
   SPLASH: "splash",
   UI: "ui",
   DIALOGUE: "dialogue",
-  CHOICE: "choice",
-  TIMED_CHOICE: "timed_choice",
+  CHOICE: "choices",
+  TIMED: "timed",
 };
 
 // -------------------------------------------------------
@@ -29,6 +29,8 @@ const state = {
   // Timed choice state
   timeRemaining: 0,
   timerRef: null,
+
+  scrollOffset: 0,
 };
 
 // -------------------------------------------------------
@@ -46,12 +48,15 @@ function setBook(book) {
   state.screenId = book.start;
   state.dialogueIndex = 0;
   loadScreenBackground();
+  setModeFromScreen();
 }
 
 function setScreen(id) {
   state.screenId = id;
   state.dialogueIndex = 0;
+  state.scrollOffset = 0;
   loadScreenBackground();
+  setModeFromScreen();
 }
 
 function nextDialogue() {
@@ -84,7 +89,7 @@ function setModeFromScreen() {
       state.mode = Mode.CHOICE;
       break;
     case "timed":
-      state.mode = Mode.TIMED_CHOICE;
+      state.mode = Mode.TIMED;
       break;
   }
 }
